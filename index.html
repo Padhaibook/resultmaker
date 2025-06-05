@@ -188,12 +188,18 @@
                 let roll = i;
                 let marksArr = [];
                 for (let s = 0; s < numSubjects; s++) {
-                    let val = parseInt(document.getElementById(`marks_${i}_${s}`).value, 10);
-                    if (isNaN(val) || val < 0 || val > totalMarksArr[s]) {
-                        alert(`Please enter valid marks for Roll Number ${i}, Subject ${subjects[s]}`);
+                    let el = document.getElementById(`marks_${i}_${s}`);
+                    if (!el) {
+                        alert(`Missing input for student ${i} subject ${subjects[s]}`);
                         return;
                     }
-                    marksArr.push(val);
+                    let val = el.value.trim();
+                    if (val === "" || isNaN(Number(val)) || Number(val) < 0 || Number(val) > totalMarksArr[s]) {
+                        alert(`Please enter valid marks for Roll Number ${i}, Subject ${subjects[s]}`);
+                        el.focus();
+                        return;
+                    }
+                    marksArr.push(Number(val));
                 }
                 students.push({ roll, marksArr });
             }
