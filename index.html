@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Subject Marks Entry (Manual Table)</title>
+  <title>Flexible Student Marks Entry (Students as rows, Subjects as columns)</title>
   <style>
     body { font-family: Arial, sans-serif; }
     table { border-collapse: collapse; margin: 20px 0; width: 80%; }
@@ -10,68 +10,91 @@
     th { background: #f0f0f0; }
     input[type="text"], input[type="number"] { width: 90%; padding: 2px; }
     .hint { font-size: 90%; color: #555; }
+    button { margin-right: 5px; }
+    #controls { margin-bottom: 10px; }
+    #studentCount { width: 60px; }
   </style>
 </head>
 <body>
   <h1>Flexible Student Marks Entry</h1>
 
-  <p class="hint">
-    <strong>Instructions:</strong> Add or remove rows for subjects, and columns for students as needed.<br>
+  <div class="hint">
+    <strong>Instructions:</strong> Add or remove columns for subjects as needed.<br>
     Leave a cell blank if a student did <b>not take</b> that subject.<br>
     Enter <b>0</b> if a student was <b>absent</b> for that subject.<br>
-    Enter marks otherwise.<br>
-    <button onclick="addSubjectRow()">Add Subject Row</button>
-    <button onclick="addStudentColumn()">Add Student Column</button>
-  </p>
+    Enter marks otherwise.
+  </div>
+
+  <div id="controls">
+    <button onclick="addSubjectColumn()">Add Subject Column</button>
+    &nbsp;|&nbsp;
+    <label>
+      Number of Students:
+      <input type="number" id="studentCount" min="1" value="2" onchange="updateStudentRows()">
+    </label>
+  </div>
 
   <table id="marksTable">
     <thead>
       <tr>
-        <th>Subject Name</th>
-        <th>Student 1<br><input type="text" value="Roll 1"></th>
-        <th>Student 2<br><input type="text" value="Roll 2"></th>
+        <th>Student Name / Roll</th>
+        <th><input type="text" placeholder="Subject 1"></th>
+        <th><input type="text" placeholder="Subject 2"></th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><input type="text" placeholder="Subject"></td>
+        <td><input type="text" placeholder="Student 1"></td>
         <td><input type="number" min="0"></td>
         <td><input type="number" min="0"></td>
       </tr>
       <tr>
-        <td><input type="text" placeholder="Subject"></td>
+        <td><input type="text" placeholder="Student 2"></td>
         <td><input type="number" min="0"></td>
         <td><input type="number" min="0"></td>
       </tr>
-      <!-- User can add more rows/columns as needed -->
     </tbody>
   </table>
 
   <script>
-    // Let user add more subject rows
-    function addSubjectRow() {
-      const table = document.getElementById('marksTable').getElementsByTagName('tbody')[0];
-      const tr = document.createElement('tr');
-      const thRow = document.getElementById('marksTable').rows[0];
-      tr.innerHTML = `<td><input type="text" placeholder="Subject"></td>`;
-      for (let i = 1; i < thRow.cells.length; ++i) {
-        tr.innerHTML += `<td><input type="number" min="0"></td>`;
-      }
-      table.appendChild(tr);
-    }
-    // Let user add more student columns
-    function addStudentColumn() {
+    // Add new subject column
+    function addSubjectColumn() {
       const table = document.getElementById('marksTable');
-      // Add to header
+      // Add to thead
       const th = document.createElement('th');
-      const n = table.rows[0].cells.length;
-      th.innerHTML = `Student ${n}<br><input type="text" value="Roll ${n}">`;
+      th.innerHTML = '<input type="text" placeholder="Subject">';
       table.rows[0].appendChild(th);
-      // Add to each body row
+      // Add input cell to each row in tbody
       for (let i = 1; i < table.rows.length; ++i) {
         const td = document.createElement('td');
         td.innerHTML = `<input type="number" min="0">`;
         table.rows[i].appendChild(td);
+      }
+    }
+
+    // Update student rows based on input field
+    function updateStudentRows() {
+      const table = document.getElementById('marksTable');
+      const studentCount = parseInt(document.getElementById('studentCount').value, 10) || 2;
+      const colCount = table.rows[0].cells.length;
+      let tbody = table.tBodies[0];
+
+      // Remove/Add rows as necessary
+      let currentRows = tbody.rows.length;
+      // Add rows if needed
+      while (currentRows < studentCount) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><input type="text" placeholder="Student ${currentRows + 1}"></td>`;
+        for (let i = 1; i < colCount; ++i) {
+          tr.innerHTML += `<td><input type="number" min="0"></td>`;
+        }
+        tbody.appendChild(tr);
+        currentRows++;
+      }
+      // Remove rows if needed
+      while (currentRows > studentCount) {
+        tbody.deleteRow(tbody.rows.length - 1);
+        currentRows--;
       }
     }
   </script>
