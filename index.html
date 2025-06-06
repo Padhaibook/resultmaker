@@ -12,21 +12,21 @@
     .hint { font-size: 90%; color: #555; }
     button { margin-right: 5px; }
     #controls { margin-bottom: 10px; }
-    #studentCount { width: 60px; }
+    #studentCount, #subjectCount { width: 60px; }
   </style>
 </head>
 <body>
   <h1>Flexible Student Marks Entry</h1>
 
   <div class="hint">
-    <strong>Instructions:</strong> Add or remove columns for subjects as needed.<br>
-    Leave a cell blank if a student did <b>not take</b> that subject.<br>
-    Enter <b>0</b> if a student was <b>absent</b> for that subject.<br>
-    Enter marks otherwise.
+    <strong>Instructions:</strong> Adjust the number of students and subjects. Leave a cell blank if a student did <b>not take</b> that subject. Enter <b>0</b> if a student was <b>absent</b> for that subject. Enter marks otherwise.
   </div>
 
   <div id="controls">
-    <button onclick="addSubjectColumn()">Add Subject Column</button>
+    <label>
+      Number of Subjects:
+      <input type="number" id="subjectCount" min="1" value="2" onchange="updateSubjectColumns()">
+    </label>
     &nbsp;|&nbsp;
     <label>
       Number of Students:
@@ -57,30 +57,42 @@
   </table>
 
   <script>
-    // Add new subject column
-    function addSubjectColumn() {
+    // Ensure subject columns match subjectCount input
+    function updateSubjectColumns() {
       const table = document.getElementById('marksTable');
-      // Add to thead
-      const th = document.createElement('th');
-      th.innerHTML = '<input type="text" placeholder="Subject">';
-      table.rows[0].appendChild(th);
-      // Add input cell to each row in tbody
-      for (let i = 1; i < table.rows.length; ++i) {
-        const td = document.createElement('td');
-        td.innerHTML = `<input type="number" min="0">`;
-        table.rows[i].appendChild(td);
+      const subjectCount = parseInt(document.getElementById('subjectCount').value, 10) || 2;
+      const theadRow = table.tHead.rows[0];
+      const currentCols = theadRow.cells.length - 1; // First col is Student Name/Roll
+
+      // Add new subject columns if needed
+      while (currentCols < subjectCount) {
+        const th = document.createElement('th');
+        th.innerHTML = `<input type="text" placeholder="Subject ${currentCols + 1}">`;
+        theadRow.appendChild(th);
+        // Add to tbody rows
+        for (let i = 0; i < table.tBodies[0].rows.length; ++i) {
+          const td = document.createElement('td');
+          td.innerHTML = `<input type="number" min="0">`;
+          table.tBodies[0].rows[i].appendChild(td);
+        }
+      }
+      // Remove extra subject columns if needed
+      while (currentCols > subjectCount) {
+        theadRow.deleteCell(-1);
+        for (let i = 0; i < table.tBodies[0].rows.length; ++i) {
+          table.tBodies[0].rows[i].deleteCell(-1);
+        }
       }
     }
 
-    // Update student rows based on input field
+    // Ensure student rows match studentCount input
     function updateStudentRows() {
       const table = document.getElementById('marksTable');
       const studentCount = parseInt(document.getElementById('studentCount').value, 10) || 2;
-      const colCount = table.rows[0].cells.length;
+      const colCount = table.tHead.rows[0].cells.length;
       let tbody = table.tBodies[0];
-
-      // Remove/Add rows as necessary
       let currentRows = tbody.rows.length;
+
       // Add rows if needed
       while (currentRows < studentCount) {
         const tr = document.createElement('tr');
