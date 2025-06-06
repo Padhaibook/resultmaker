@@ -4,58 +4,87 @@
   <meta charset="UTF-8">
   <title>Dynamic Student Marks Table Generator</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
+    body { font-family: Arial, sans-serif; margin: 24px; background: #f8fafb; }
     .section { margin-bottom: 28px; }
-    table { border-collapse: collapse; width: 95%; margin-top: 16px; }
-    th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
-    th { background: #f0f0f0; }
-    input[type="number"], input[type="text"] { width: 90%; padding: 2px; }
-    .btn { padding: 6px 12px; font-size: 16px; }
-    .result-table { width: 60%; margin-bottom: 30px; }
-    .result-table th { background: #e0e0f0; }
-    .summary-box { margin-bottom: 22px; }
+    .form-block {
+      background: #fff; padding: 22px 28px 18px 28px; border-radius: 12px; box-shadow: 0 2px 12px #e3e8ee;
+      max-width: 600px; margin: 0 auto 20px auto;
+    }
+    label { display: block; margin: 16px 0 6px 0; font-weight: 500; color: #344054;}
+    input[type="number"], input[type="text"] {
+      padding: 8px 10px; border: 1.5px solid #cfd8dc; border-radius: 5px; font-size: 1rem; background: #fafcff;
+      margin-right: 10px; margin-bottom: 6px; transition: border-color 0.2s;
+    }
+    input[type="number"]:focus, input[type="text"]:focus {
+      outline: none; border-color: #3b82f6; background: #f0f6ff;
+    }
+    .subject-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 0;}
+    .subject-field-block {
+      background: #f4f8fb; padding: 15px 18px 12px 18px; border-radius: 8px; box-shadow: 0 1px 8px #f0f0f3;
+      margin-bottom: 8px; min-width: 260px; flex: 1 1 260px;
+    }
+    .btn {
+      padding: 8px 18px; font-size: 17px; border: none; border-radius: 5px;
+      background: #2e74fa; color: #fff; font-weight: 500; cursor: pointer; margin: 10px 10px 0 0;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #205ecf; }
+    table { border-collapse: collapse; width: 95%; margin: 24px auto 0 auto; background: #fff; }
+    th, td { border: 1px solid #cfd8dc; padding: 8px; text-align: center; }
+    th { background: #f1f5f9; font-weight: 600; color: #215186;}
+    .result-table { width: 75%; margin-bottom: 30px; }
+    .result-table th { background: #e3eefd; }
+    .summary-box { margin-bottom: 26px; }
+    h1, h2, h3 { text-align: center; }
+    #downloadBtn { display: block; margin: 25px auto 20px auto; }
+    @media (max-width: 900px) {
+      .result-table, table { width: 99%; font-size: 14px;}
+      .form-block { max-width: 97vw;}
+    }
   </style>
+  <!-- jsPDF CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <h1>Dynamic Student Marks Table Generator</h1>
 
   <div class="section" id="setupSection">
-    <form id="setupForm" onsubmit="event.preventDefault(); showSubjectsForm();">
-      <label>How many subjects?
-        <input type="number" id="subjectCount" min="1" max="20" required>
-      </label>
-      <br><br>
-      <label>How many students?
-        <input type="number" id="studentCount" min="1" max="100" required>
-      </label>
-      <br><br>
+    <form id="setupForm" class="form-block" onsubmit="event.preventDefault(); showSubjectsForm();">
+      <label for="subjectCount">Number of Subjects</label>
+      <input type="number" id="subjectCount" min="1" max="20" value="3" required>
+      <label for="studentCount">Number of Students</label>
+      <input type="number" id="studentCount" min="1" max="100" value="5" required>
       <button type="submit" class="btn">Next</button>
     </form>
   </div>
 
   <div class="section" id="subjectsSection" style="display:none;">
-    <form id="subjectsForm" onsubmit="event.preventDefault(); showNamesPrompt();">
-      <div id="subjectsInputs"></div>
-      <br>
+    <form id="subjectsForm" class="form-block" onsubmit="event.preventDefault(); showNamesPrompt();">
+      <label style="margin-bottom:8px;">Enter Subjects and Max Marks</label>
+      <div id="subjectsInputs" class="subject-fields"></div>
       <button type="submit" class="btn">Next</button>
     </form>
   </div>
 
   <div class="section" id="namesPromptSection" style="display:none;">
-    <span>Do you want to input the names of the students as well?</span>
-    <button class="btn" onclick="generateTable(true)">Yes</button>
-    <button class="btn" onclick="generateTable(false)">No</button>
+    <div class="form-block" style="text-align:center;">
+      <span style="font-size:1.08rem;">Do you want to input the names of the students as well?</span>
+      <br><br>
+      <button class="btn" onclick="generateTable(true)">Yes</button>
+      <button class="btn" onclick="generateTable(false)">No</button>
+    </div>
   </div>
 
   <div class="section" id="marksTableSection" style="display:none;">
-    <form id="marksForm" onsubmit="event.preventDefault(); processMarks();">
+    <form id="marksForm" class="form-block" onsubmit="event.preventDefault(); processMarks();">
       <div id="marksTableContainer"></div>
-      <br>
-      <button type="submit" class="btn">Save Marks</button>
+      <button type="submit" class="btn" style="margin-top:18px;">Save Marks</button>
     </form>
   </div>
 
   <div class="section" id="resultsSection" style="display:none;">
+    <button id="downloadBtn" class="btn" onclick="downloadPDF()">Download Results as PDF</button>
     <h2>Results</h2>
     <div id="resultsDisplay"></div>
   </div>
@@ -69,8 +98,13 @@
       if (!subjectCount || !studentCount) return;
       let html = '';
       for (let i = 1; i <= subjectCount; i++) {
-        html += `<label>Subject ${i} Name: <input type="text" required id="subName${i}" placeholder="Subject ${i}"></label>
-                 <label> Max Marks: <input type="number" min="1" required id="subMarks${i}"></label><br><br>`;
+        html += `
+        <div class="subject-field-block">
+          <label>Subject ${i} Name</label>
+          <input type="text" required id="subName${i}" placeholder="e.g. Mathematics">
+          <label>Max Marks</label>
+          <input type="number" min="1" required id="subMarks${i}" placeholder="e.g. 100">
+        </div>`;
       }
       document.getElementById('subjectsInputs').innerHTML = html;
       document.getElementById('setupSection').style.display = 'none';
@@ -94,14 +128,14 @@
       let table = '<table id="marksInputTable"><thead><tr><th>Roll No.</th>';
       if (askNames) table += '<th>Name</th>';
       for (let i = 0; i < subjectCount; i++) {
-        table += `<th>${subjects[i]}<br>(Max: ${subjectMaxMarks[i]})</th>`;
+        table += `<th>${subjects[i]}<br><span style="font-size:0.98em;font-weight:400;">(Max: ${subjectMaxMarks[i]})</span></th>`;
       }
       table += '</tr></thead><tbody>';
       for (let r = 1; r <= studentCount; r++) {
         table += `<tr><td>${r}</td>`;
         if (askNames) table += `<td><input type="text" placeholder="Student ${r}" class="student-name"></td>`;
         for (let s = 0; s < subjectCount; s++) {
-          table += `<td><input type="number" min="0" max="${subjectMaxMarks[s]}" class="mark-input" data-student="${r-1}" data-subject="${s}"></td>`;
+          table += `<td><input type="number" min="0" max="${subjectMaxMarks[s]}" class="mark-input" data-student="${r-1}" data-subject="${s}" style="width:65px;"></td>`;
         }
         table += '</tr>';
       }
@@ -116,8 +150,8 @@
       // Gather data from the table
       const table = document.getElementById('marksInputTable');
       let students = [];
+      let maxTotalMarks = subjectMaxMarks.reduce((a, b) => a + b, 0);
       for (let r = 0; r < studentCount; r++) {
-        // Each row: first is roll, second (if askNames) is name, then marks
         let row = table.tBodies[0].rows[r];
         let student = {
           roll: r + 1,
@@ -126,7 +160,7 @@
           total: 0,
           percent: 0
         };
-        let totalMarks = 0, subjectsAttempted = 0;
+        let totalMarks = 0, subjectsAttempted = 0, totalPossible = 0;
         for (let s = 0; s < subjectCount; s++) {
           let cellIndex = askNames ? s + 2 : s + 1;
           let input = row.cells[cellIndex].querySelector('input');
@@ -135,13 +169,14 @@
             let num = parseFloat(val);
             student.marks[s] = num;
             totalMarks += num;
+            totalPossible += subjectMaxMarks[s];
             subjectsAttempted++;
           } else {
             student.marks[s] = null; // Not taken
           }
         }
         student.total = totalMarks;
-        student.percent = subjectsAttempted ? (totalMarks / subjectsAttempted).toFixed(2) : "N/A";
+        student.percent = (totalPossible > 0) ? ((totalMarks / totalPossible) * 100).toFixed(2) : "N/A";
         students.push(student);
       }
 
@@ -163,11 +198,15 @@
         };
       });
 
+      // Overall QPI: average of subject averages (excluding N/A)
+      let qpis = subjectStats.map(stat => parseFloat(stat.avg)).filter(x => !isNaN(x));
+      let overallQPI = qpis.length ? (qpis.reduce((a, b) => a + b, 0) / qpis.length).toFixed(2) : "N/A";
+
       // Student summary table
       let resultsHTML = `<div class="summary-box"><b>Student Summary</b><br>
       <table class="result-table"><thead><tr><th>Roll No.</th>`;
       if (askNames) resultsHTML += `<th>Name</th>`;
-      resultsHTML += `<th>Total</th><th>Average %</th></tr></thead><tbody>`;
+      resultsHTML += `<th>Total Marks</th><th>Percentage (%)</th></tr></thead><tbody>`;
       students.forEach(stu => {
         resultsHTML += `<tr><td>${stu.roll}</td>`;
         if (askNames) resultsHTML += `<td>${stu.name}</td>`;
@@ -190,9 +229,36 @@
         resultsHTML += `</tbody></table></div>`;
       });
 
+      // Subject-wise QPI summary
+      resultsHTML += `<div class="summary-box"><b>Subject-wise QPI (Average Marks):</b>
+        <table class="result-table"><thead><tr>`;
+      subjects.forEach(sub => resultsHTML += `<th>${sub}</th>`);
+      resultsHTML += `</tr></thead><tbody><tr>`;
+      subjectStats.forEach(stat => resultsHTML += `<td>${stat.avg}</td>`);
+      resultsHTML += `</tr></tbody></table>
+      <div style="margin-top:10px;"><b>Overall QPI (Average of QPIs): ${overallQPI}</b></div>
+      </div>`;
+
       document.getElementById('resultsDisplay').innerHTML = resultsHTML;
       document.getElementById('resultsSection').style.display = '';
       window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
+    }
+
+    // PDF Export
+    function downloadPDF() {
+      const results = document.getElementById('resultsSection');
+      // Hide the download button in the PDF
+      document.getElementById('downloadBtn').style.display = 'none';
+      html2canvas(results, {scale:2}).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
+        pdf.save('student-results.pdf');
+        document.getElementById('downloadBtn').style.display = '';
+      });
     }
   </script>
 </body>
