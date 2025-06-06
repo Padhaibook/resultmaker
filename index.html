@@ -27,15 +27,15 @@
     }
     .btn {
       padding: 8px 18px; font-size: 17px; border: none; border-radius: 5px;
-      background: #2e74fa; color: #fff; font-weight: 500; cursor: pointer; margin: 10px 10px 0 0;
+      background: #1857b4; color: #fff; font-weight: 500; cursor: pointer; margin: 10px 10px 0 0;
       transition: background 0.2s;
     }
-    .btn:hover { background: #205ecf; }
+    .btn:hover { background: #133e7c; }
     table { border-collapse: collapse; width: 95%; margin: 24px auto 0 auto; background: #fff; }
     th, td { border: 1px solid #cfd8dc; padding: 8px; text-align: center; }
-    th { background: #f1f5f9; font-weight: 600; color: #215186;}
+    th { background: #e4ecf6; font-weight: 600; color: #1857b4;}
     .result-table { width: 75%; margin-bottom: 30px; }
-    .result-table th { background: #e3eefd; }
+    .result-table th { background: #dde7f7; }
     .summary-box { margin-bottom: 26px; }
     h1, h2, h3 { text-align: center; }
     #downloadBtn, #printBtn { display: block; margin: 25px auto 10px auto; }
@@ -44,6 +44,14 @@
       .result-table, table { width: 99%; font-size: 14px;}
       .form-block { max-width: 97vw;}
       .subjects-grid { flex-direction: column; }
+    }
+    /* Print: Only print results section */
+    @media print {
+      body * { visibility: hidden !important; }
+      #resultsSection, #resultsSection * { visibility: visible !important; }
+      #resultsSection { position: absolute; left: 0; top: 0; width: 100vw; }
+      #downloadBtn, #printBtn { display: none !important; }
+      #histogramChart { page-break-before: avoid; }
     }
   </style>
   <!-- jsPDF CDN for PDF export -->
@@ -267,6 +275,15 @@
     function drawHistogram(subjectStats) {
       const ctx = document.getElementById('histogramChart').getContext('2d');
       if(window.myHistogramChart) window.myHistogramChart.destroy();
+
+      // Contrasting colors for print (blue, green, orange, purple, red, brown, teal, etc.)
+      const colors = [
+        "#1956b3", "#24a770", "#d97706", "#b91c1c", "#a21caf", "#0e7490", "#7c3aed", "#db2777",
+        "#15803d", "#d97706", "#8b5cf6", "#c026d3", "#f43f5e", "#eab308", "#0284c7", "#b45309"
+      ];
+      let barColors = [];
+      for(let i=0; i<subjectStats.length; i++) barColors.push(colors[i % colors.length]);
+
       window.myHistogramChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -274,7 +291,9 @@
           datasets: [{
             label: 'Average Marks',
             data: subjectStats.map(stat => parseFloat(stat.avg) || 0),
-            backgroundColor: '#3b82f6',
+            backgroundColor: barColors,
+            borderColor: "#22292f",
+            borderWidth: 1.5,
             borderRadius: 6,
             barPercentage: 0.65,
             categoryPercentage: 0.7
@@ -284,15 +303,18 @@
           responsive: false,
           plugins: {
             legend: { display: false },
-            title: {
-              display: false
-            }
+            title: { display: false }
           },
           scales: {
-            x: { title: { display: true, text: 'Subjects' } },
+            x: {
+              title: { display: true, text: 'Subjects', font: {size: 16, weight: 'bold'} },
+              ticks: { color: '#132d4d', font: {size: 13} }
+            },
             y: {
-              title: { display: true, text: 'Average Marks' },
-              beginAtZero: true
+              title: { display: true, text: 'Average Marks', font: {size: 16, weight: 'bold'} },
+              beginAtZero: true,
+              grid: { color: '#e2e8f0' },
+              ticks: { color: '#132d4d', font: {size: 13} }
             }
           }
         }
@@ -304,7 +326,7 @@
       const results = document.getElementById('resultsSection');
       document.getElementById('downloadBtn').style.display = 'none';
       document.getElementById('printBtn').style.display = 'none';
-      html2canvas(results, {scale:2}).then(canvas => {
+      html2canvas(results, {scale:2, backgroundColor:'#fff'}).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4');
         const imgProps = pdf.getImageProperties(imgData);
