@@ -1,320 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Marks Analyzer</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 30px;
-        }
-        table {
-            margin: 20px auto;
-            border-collapse: collapse;
-            width: 90%;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .input-section {
-            margin-bottom: 20px;
-        }
-        .category-table, .qpi-table {
-            margin-top: 40px;
-        }
-        .download-btn {
-            margin-top: 20px;
-        }
-    </style>
-    <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.26/jspdf.plugin.autotable.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Student Marks Entry & Subjectwise Tables</title>
+  <style>
+    table { border-collapse: collapse; margin-bottom: 24px; width: 60%; }
+    th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+    .section { margin-bottom: 32px; }
+  </style>
 </head>
 <body>
-    <h1>Student Marks Analyzer</h1>
+  <h1>Student Marks Entry (Subjectwise Tables, Simple HTML)</h1>
 
-    <!-- Input Section -->
-    <div class="input-section">
-        <label for="numSubjects">Number of Subjects (5-10):</label>
-        <input type="number" id="numSubjects" min="5" max="10" placeholder="Enter number of subjects">
-        <br><br>
-        <label for="numStudents">Number of Students (Max 70):</label>
-        <input type="number" id="numStudents" min="1" max="70" placeholder="Enter number of students">
-        <br><br>
-        <button onclick="generateSubjectInputs()">Next</button>
-    </div>
+  <div class="section">
+    <h2>Fixed Subjects</h2>
+    <ol>
+      <li>Mathematics</li>
+      <li>English</li>
+      <li>Science</li>
+    </ol>
+    <h2>Optional Subjects</h2>
+    <ol>
+      <li>Computer Science</li>
+      <li>Economics</li>
+      <li>Hindi</li>
+      <li>Art</li>
+    </ol>
+  </div>
 
-    <!-- Subject Names and Total Marks -->
-    <div id="subjectInputs"></div>
-    <div id="marksInputs"></div>
-    <div id="generateBtnContainer"></div>
+  <div class="section">
+    <h2>Student Marks Entry (5 subjects/row, blank = not taken, 0 = absent)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Mathematics</th>
+          <th>English</th>
+          <th>Science</th>
+          <th>Computer Science</th>
+          <th>Economics</th>
+          <th>Hindi</th>
+          <th>Art</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>89</td>
+          <td>73</td>
+          <td>78</td>
+          <td>94</td>
+          <td></td>
+          <td></td>
+          <td>81</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>66</td>
+          <td>80</td>
+          <td></td>
+          <td>0</td>
+          <td>75</td>
+          <td>90</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>92</td>
+          <td></td>
+          <td>83</td>
+          <td></td>
+          <td>77</td>
+          <td>96</td>
+          <td>0</td>
+        </tr>
+        <!-- Add more students as needed -->
+      </tbody>
+    </table>
+  </div>
 
-    <!-- Analysis Tables -->
-    <div id="analysisSection" style="display:none;">
-        <h2>Student Results</h2>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <th>Roll Number</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Results will be dynamically inserted here -->
-            </tbody>
-        </table>
+  <div class="section">
+    <h2>Subject-wise Tables</h2>
+    <h3>Mathematics</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>89</td></tr>
+        <tr><td>2</td><td>66</td></tr>
+        <tr><td>3</td><td>92</td></tr>
+      </tbody>
+    </table>
 
-        <h2>Subject-wise QPI</h2>
-        <table id="subjectQpiTable" class="qpi-table">
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>QPI (Average Percentage)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Subject QPIs will be dynamically inserted here -->
-            </tbody>
-        </table>
+    <h3>English</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>73</td></tr>
+        <tr><td>2</td><td>80</td></tr>
+      </tbody>
+    </table>
 
-        <h2>Overall QPI (Average of Subject-wise QPIs): <span id="overallQpi"></span>%</h2>
+    <h3>Science</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>78</td></tr>
+        <tr><td>3</td><td>83</td></tr>
+      </tbody>
+    </table>
 
-        <h2>Category Analysis (Overall Percentage)</h2>
-        <table id="categoryTable" class="category-table">
-            <thead>
-                <tr>
-                    <th>Category (Overall % Range)</th>
-                    <th>Number of Students</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Category analysis will be dynamically inserted here -->
-            </tbody>
-        </table>
+    <h3>Computer Science</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>94</td></tr>
+        <tr><td>2</td><td>0</td></tr>
+      </tbody>
+    </table>
 
-        <div class="download-btn">
-            <button onclick="downloadPDF()">Download as PDF</button>
-        </div>
-    </div>
+    <h3>Economics</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>75</td></tr>
+        <tr><td>3</td><td>77</td></tr>
+      </tbody>
+    </table>
 
-    <script>
-        let numSubjects = 0;
-        let numStudents = 0;
-        let subjects = [];
-        let totalMarksArr = [];
+    <h3>Hindi</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>90</td></tr>
+        <tr><td>3</td><td>96</td></tr>
+      </tbody>
+    </table>
 
-        function generateSubjectInputs() {
-            numSubjects = parseInt(document.getElementById('numSubjects').value, 10);
-            numStudents = parseInt(document.getElementById('numStudents').value, 10);
-
-            if (isNaN(numSubjects) || numSubjects < 5 || numSubjects > 10) {
-                alert("Number of subjects must be between 5 and 10.");
-                return;
-            }
-            if (isNaN(numStudents) || numStudents < 1 || numStudents > 70) {
-                alert("Number of students must be between 1 and 70.");
-                return;
-            }
-
-            // Subject Names and Total Marks
-            let html = '';
-            for (let i = 1; i <= numSubjects; i++) {
-                html += `<div>
-                    <label>Subject ${i} Name: </label>
-                    <input type="text" id="subject${i}" placeholder="Enter Subject Name">
-                    <label>Total Marks: </label>
-                    <input type="number" id="totalMarks${i}" min="1" placeholder="Total Marks">
-                </div>`;
-            }
-            html += `<br><button onclick="generateMarksInputs()">Next</button>`;
-            document.getElementById('subjectInputs').innerHTML = html;
-            document.getElementById('marksInputs').innerHTML = '';
-            document.getElementById('generateBtnContainer').innerHTML = '';
-            document.getElementById('analysisSection').style.display = "none";
-        }
-
-        function generateMarksInputs() {
-            subjects = [];
-            totalMarksArr = [];
-            for (let i = 1; i <= numSubjects; i++) {
-                let subjectName = document.getElementById(`subject${i}`).value.trim();
-                let totalMarks = parseInt(document.getElementById(`totalMarks${i}`).value, 10);
-                if (!subjectName || isNaN(totalMarks) || totalMarks <= 0) {
-                    alert("Please provide all subject names and valid total marks.");
-                    return;
-                }
-                subjects.push(subjectName);
-                totalMarksArr.push(totalMarks);
-            }
-
-            let html = '<div style="overflow-x:auto;"><table><thead><tr><th>Roll Number</th>';
-            for (let s = 0; s < numSubjects; s++) {
-                html += `<th>${subjects[s]}<br>(Out of ${totalMarksArr[s]})</th>`;
-            }
-            html += '</tr></thead><tbody>';
-            for (let i = 1; i <= numStudents; i++) {
-                html += `<tr><td>${i}</td>`;
-                for (let s = 0; s < numSubjects; s++) {
-                    html += `<td><input type="number" id="marks_${i}_${s}" min="0" max="${totalMarksArr[s]}" style="width: 60px;"></td>`;
-                }
-                html += '</tr>';
-            }
-            html += '</tbody></table></div>';
-            document.getElementById('marksInputs').innerHTML = html;
-            document.getElementById('generateBtnContainer').innerHTML = '<button onclick="processData()">Process</button>';
-            document.getElementById('analysisSection').style.display = "none";
-        }
-
-        function processData() {
-            let students = [];
-            // Gather all marks
-            for (let i = 1; i <= numStudents; i++) {
-                let roll = i;
-                let marksArr = [];
-                for (let s = 0; s < numSubjects; s++) {
-                    let el = document.getElementById(`marks_${i}_${s}`);
-                    if (!el) {
-                        alert(`Missing input for student ${i} subject ${subjects[s]}`);
-                        return;
-                    }
-                    let val = el.value.trim();
-                    if (val === "" || isNaN(Number(val)) || Number(val) < 0 || Number(val) > totalMarksArr[s]) {
-                        alert(`Please enter valid marks for Roll Number ${i}, Subject ${subjects[s]}`);
-                        el.focus();
-                        return;
-                    }
-                    marksArr.push(Number(val));
-                }
-                students.push({ roll, marksArr });
-            }
-
-            // Subject QPI (average percentage per subject)
-            let subjectQpis = [];
-            for (let s = 0; s < numSubjects; s++) {
-                let total = 0;
-                for (let i = 0; i < students.length; i++) {
-                    total += students[i].marksArr[s];
-                }
-                let qpi = (total / (students.length * totalMarksArr[s])) * 100;
-                subjectQpis.push(qpi);
-            }
-
-            // Overall QPI
-            let overallQpi = subjectQpis.reduce((acc, val) => acc + val, 0) / subjectQpis.length;
-
-            // For each student: percentage per subject and overall percentage
-            students.forEach(stu => {
-                stu.percentages = stu.marksArr.map((m, s) => (m / totalMarksArr[s]) * 100);
-                stu.overallPercentage = stu.percentages.reduce((a, b) => a + b, 0) / numSubjects;
-            });
-
-            // Percentile calculation (based on overall percentage)
-            let sortedStudents = [...students].sort((a, b) => a.overallPercentage - b.overallPercentage);
-            students.forEach(stu => {
-                let idx = sortedStudents.findIndex(s => s.roll === stu.roll);
-                stu.percentile = ((idx + 1) / numStudents * 100).toFixed(2);
-            });
-
-            // Category Analysis
-            const categories = [
-                { range: "0% - 33%", count: 0 },
-                { range: "33% - 45%", count: 0 },
-                { range: "45% - 60%", count: 0 },
-                { range: "60% - 75%", count: 0 },
-                { range: "75% - 80%", count: 0 },
-                { range: "80% - 85%", count: 0 },
-                { range: "85% - 90%", count: 0 },
-                { range: "90% - 99%", count: 0 },
-                { range: "100%", count: 0 }
-            ];
-            students.forEach(stu => {
-                const p = stu.overallPercentage;
-                if (p <= 33) categories[0].count++;
-                else if (p <= 45) categories[1].count++;
-                else if (p <= 60) categories[2].count++;
-                else if (p <= 75) categories[3].count++;
-                else if (p <= 80) categories[4].count++;
-                else if (p <= 85) categories[5].count++;
-                else if (p <= 90) categories[6].count++;
-                else if (p < 100) categories[7].count++;
-                else categories[8].count++;
-            });
-
-            // Build results table header
-            let resultsThead = '<tr><th>Roll Number</th>';
-            for (let s = 0; s < numSubjects; s++) {
-                resultsThead += `<th>${subjects[s]}<br>(Marks)</th>`;
-                resultsThead += `<th>${subjects[s]}<br>(%)</th>`;
-            }
-            resultsThead += '<th>Overall %</th><th>Percentile</th></tr>';
-            document.querySelector('#resultsTable thead').innerHTML = resultsThead;
-
-            // Build results table body
-            let resultsTbody = "";
-            students.forEach(stu => {
-                resultsTbody += `<tr><td>${stu.roll}</td>`;
-                for (let s = 0; s < numSubjects; s++) {
-                    resultsTbody += `<td>${stu.marksArr[s]}</td><td>${stu.percentages[s].toFixed(2)}%</td>`;
-                }
-                resultsTbody += `<td>${stu.overallPercentage.toFixed(2)}%</td><td>${stu.percentile}</td></tr>`;
-            });
-            document.querySelector('#resultsTable tbody').innerHTML = resultsTbody;
-
-            // Subject QPI Table
-            let subjectQpiBody = "";
-            for (let s = 0; s < numSubjects; s++) {
-                subjectQpiBody += `<tr><td>${subjects[s]}</td><td>${subjectQpis[s].toFixed(2)}%</td></tr>`;
-            }
-            document.querySelector('#subjectQpiTable tbody').innerHTML = subjectQpiBody;
-            document.getElementById('overallQpi').textContent = overallQpi.toFixed(2);
-
-            // Category Table
-            let categoryBody = "";
-            categories.forEach(c => {
-                categoryBody += `<tr><td>${c.range}</td><td>${c.count}</td></tr>`;
-            });
-            document.querySelector('#categoryTable tbody').innerHTML = categoryBody;
-
-            document.getElementById('analysisSection').style.display = "";
-        }
-
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape' });
-
-            // Results Table
-            doc.text("Student Results", 10, 10);
-            doc.autoTable({
-                html: '#resultsTable',
-                startY: 15,
-                styles: { fontSize: 7 }
-            });
-
-            // Subject QPI Table
-            doc.addPage();
-            doc.text("Subject-wise QPI", 10, 10);
-            doc.autoTable({
-                html: '#subjectQpiTable',
-                startY: 15
-            });
-            doc.text("Overall QPI: " + document.getElementById('overallQpi').textContent + "%", 10, 50);
-
-            // Category Table
-            doc.addPage();
-            doc.text("Category Analysis", 10, 10);
-            doc.autoTable({
-                html: '#categoryTable',
-                startY: 15
-            });
-
-            doc.save('student_marks_analysis.pdf');
-        }
-    </script>
+    <h3>Art</h3>
+    <table>
+      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>81</td></tr>
+        <tr><td>3</td><td>0</td></tr>
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
