@@ -10,18 +10,20 @@
       background: #fff; padding: 22px 28px 18px 28px; border-radius: 12px; box-shadow: 0 2px 12px #e3e8ee;
       max-width: 600px; margin: 0 auto 20px auto;
     }
-    label { display: block; margin: 16px 0 6px 0; font-weight: 500; color: #344054;}
+    label { font-weight: 500; color: #344054; }
     input[type="number"], input[type="text"] {
-      padding: 8px 10px; border: 1.5px solid #cfd8dc; border-radius: 5px; font-size: 1rem; background: #fafcff;
-      margin-right: 10px; margin-bottom: 6px; transition: border-color 0.2s;
+      padding: 7px 8px; border: 1.5px solid #cfd8dc; border-radius: 5px; font-size: 1rem; background: #fafcff;
+      margin: 0 8px 0 0; width: 90px;
     }
     input[type="number"]:focus, input[type="text"]:focus {
       outline: none; border-color: #3b82f6; background: #f0f6ff;
     }
-    .subject-fields { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 0;}
-    .subject-field-block {
-      background: #f4f8fb; padding: 15px 18px 12px 18px; border-radius: 8px; box-shadow: 0 1px 8px #f0f0f3;
-      margin-bottom: 8px; min-width: 260px; flex: 1 1 260px;
+    .subjects-grid {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 0; align-items: center;
+    }
+    .subject-pair {
+      display: flex; align-items: center; gap: 4px; margin-bottom: 8px;
+      background: #f6f8fd; padding: 4px 8px; border-radius: 6px;
     }
     .btn {
       padding: 8px 18px; font-size: 17px; border: none; border-radius: 5px;
@@ -36,15 +38,19 @@
     .result-table th { background: #e3eefd; }
     .summary-box { margin-bottom: 26px; }
     h1, h2, h3 { text-align: center; }
-    #downloadBtn { display: block; margin: 25px auto 20px auto; }
+    #downloadBtn, #printBtn { display: block; margin: 25px auto 10px auto; }
+    #histogramChart { display: block; margin: 0 auto 25px auto; background: #fff; border-radius: 12px; }
     @media (max-width: 900px) {
       .result-table, table { width: 99%; font-size: 14px;}
       .form-block { max-width: 97vw;}
+      .subjects-grid { flex-direction: column; }
     }
   </style>
   <!-- jsPDF CDN for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Chart.js CDN for histogram -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <h1>Dynamic Student Marks Table Generator</h1>
@@ -61,8 +67,8 @@
 
   <div class="section" id="subjectsSection" style="display:none;">
     <form id="subjectsForm" class="form-block" onsubmit="event.preventDefault(); showNamesPrompt();">
-      <label style="margin-bottom:8px;">Enter Subjects and Max Marks</label>
-      <div id="subjectsInputs" class="subject-fields"></div>
+      <label>Subjects (Name &amp; Max Marks):</label>
+      <div id="subjectsInputs" class="subjects-grid"></div>
       <button type="submit" class="btn">Next</button>
     </form>
   </div>
@@ -85,8 +91,14 @@
 
   <div class="section" id="resultsSection" style="display:none;">
     <button id="downloadBtn" class="btn" onclick="downloadPDF()">Download Results as PDF</button>
+    <button id="printBtn" class="btn" onclick="window.print()">Print Results</button>
     <h2>Results</h2>
     <div id="resultsDisplay"></div>
+    <h3>Subject-wise Average Marks Histogram</h3>
+    <canvas id="histogramChart" width="700" height="320"></canvas>
+    <div style="text-align:center;">
+      <button id="downloadChartBtn" class="btn" onclick="downloadChartImage()">Download Histogram Image</button>
+    </div>
   </div>
 
   <script>
@@ -99,11 +111,9 @@
       let html = '';
       for (let i = 1; i <= subjectCount; i++) {
         html += `
-        <div class="subject-field-block">
-          <label>Subject ${i} Name</label>
-          <input type="text" required id="subName${i}" placeholder="e.g. Mathematics">
-          <label>Max Marks</label>
-          <input type="number" min="1" required id="subMarks${i}" placeholder="e.g. 100">
+        <div class="subject-pair">
+          <input type="text" required id="subName${i}" placeholder="Subject ${i}" style="width:110px;">
+          <input type="number" min="1" required id="subMarks${i}" placeholder="Max" style="width:60px;">
         </div>`;
       }
       document.getElementById('subjectsInputs').innerHTML = html;
@@ -144,6 +154,9 @@
       document.getElementById('marksTableSection').style.display = '';
       document.getElementById('resultsSection').style.display = 'none';
       document.getElementById('resultsDisplay').innerHTML = '';
+      if(window.myHistogramChart) window.myHistogramChart.destroy();
+      document.getElementById('histogramChart').style.display = 'none';
+      document.getElementById('downloadChartBtn').style.display = 'none';
     }
 
     function processMarks() {
@@ -242,13 +255,55 @@
       document.getElementById('resultsDisplay').innerHTML = resultsHTML;
       document.getElementById('resultsSection').style.display = '';
       window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
+
+      // Draw histogram
+      drawHistogram(subjectStats);
+
+      // Show chart and download button
+      document.getElementById('histogramChart').style.display = '';
+      document.getElementById('downloadChartBtn').style.display = '';
+    }
+
+    function drawHistogram(subjectStats) {
+      const ctx = document.getElementById('histogramChart').getContext('2d');
+      if(window.myHistogramChart) window.myHistogramChart.destroy();
+      window.myHistogramChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: subjectStats.map(stat => stat.name),
+          datasets: [{
+            label: 'Average Marks',
+            data: subjectStats.map(stat => parseFloat(stat.avg) || 0),
+            backgroundColor: '#3b82f6',
+            borderRadius: 6,
+            barPercentage: 0.65,
+            categoryPercentage: 0.7
+          }]
+        },
+        options: {
+          responsive: false,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: false
+            }
+          },
+          scales: {
+            x: { title: { display: true, text: 'Subjects' } },
+            y: {
+              title: { display: true, text: 'Average Marks' },
+              beginAtZero: true
+            }
+          }
+        }
+      });
     }
 
     // PDF Export
     function downloadPDF() {
       const results = document.getElementById('resultsSection');
-      // Hide the download button in the PDF
       document.getElementById('downloadBtn').style.display = 'none';
+      document.getElementById('printBtn').style.display = 'none';
       html2canvas(results, {scale:2}).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new window.jspdf.jsPDF('p', 'pt', 'a4');
@@ -258,7 +313,16 @@
         pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth, pdfHeight);
         pdf.save('student-results.pdf');
         document.getElementById('downloadBtn').style.display = '';
+        document.getElementById('printBtn').style.display = '';
       });
+    }
+    // Histogram image download
+    function downloadChartImage() {
+      const chart = document.getElementById('histogramChart');
+      const link = document.createElement('a');
+      link.href = chart.toDataURL('image/png');
+      link.download = 'histogram_subjectwise_avg.png';
+      link.click();
     }
   </script>
 </body>
