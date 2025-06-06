@@ -2,112 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Flexible Student Marks Entry (Students as rows, Subjects as columns)</title>
+  <title>Dynamic Student Marks Table Generator</title>
   <style>
-    body { font-family: Arial, sans-serif; }
-    table { border-collapse: collapse; margin: 20px 0; width: 80%; }
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .section { margin-bottom: 28px; }
+    table { border-collapse: collapse; width: 95%; margin-top: 16px; }
     th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
     th { background: #f0f0f0; }
-    input[type="text"], input[type="number"] { width: 90%; padding: 2px; }
-    .hint { font-size: 90%; color: #555; }
-    button { margin-right: 5px; }
-    #controls { margin-bottom: 10px; }
-    #studentCount, #subjectCount { width: 60px; }
+    input[type="number"], input[type="text"] { width: 90%; padding: 2px; }
+    .btn { padding: 6px 12px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h1>Flexible Student Marks Entry</h1>
+  <h1>Dynamic Student Marks Table Generator</h1>
 
-  <div class="hint">
-    <strong>Instructions:</strong> Adjust the number of students and subjects. Leave a cell blank if a student did <b>not take</b> that subject. Enter <b>0</b> if a student was <b>absent</b> for that subject. Enter marks otherwise.
+  <div class="section" id="setupSection">
+    <form id="setupForm" onsubmit="event.preventDefault(); showSubjectsForm();">
+      <label>How many subjects?
+        <input type="number" id="subjectCount" min="1" max="20" required>
+      </label>
+      <br><br>
+      <label>How many students?
+        <input type="number" id="studentCount" min="1" max="100" required>
+      </label>
+      <br><br>
+      <button type="submit" class="btn">Next</button>
+    </form>
   </div>
 
-  <div id="controls">
-    <label>
-      Number of Subjects:
-      <input type="number" id="subjectCount" min="1" value="2" onchange="updateSubjectColumns()">
-    </label>
-    &nbsp;|&nbsp;
-    <label>
-      Number of Students:
-      <input type="number" id="studentCount" min="1" value="2" onchange="updateStudentRows()">
-    </label>
+  <div class="section" id="subjectsSection" style="display:none;">
+    <form id="subjectsForm" onsubmit="event.preventDefault(); showNamesPrompt();">
+      <div id="subjectsInputs"></div>
+      <br>
+      <button type="submit" class="btn">Next</button>
+    </form>
   </div>
 
-  <table id="marksTable">
-    <thead>
-      <tr>
-        <th>Student Name / Roll</th>
-        <th><input type="text" placeholder="Subject 1"></th>
-        <th><input type="text" placeholder="Subject 2"></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><input type="text" placeholder="Student 1"></td>
-        <td><input type="number" min="0"></td>
-        <td><input type="number" min="0"></td>
-      </tr>
-      <tr>
-        <td><input type="text" placeholder="Student 2"></td>
-        <td><input type="number" min="0"></td>
-        <td><input type="number" min="0"></td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="section" id="namesPromptSection" style="display:none;">
+    <span>Do you want to input the names of the students as well?</span>
+    <button class="btn" onclick="generateTable(true)">Yes</button>
+    <button class="btn" onclick="generateTable(false)">No</button>
+  </div>
+
+  <div class="section" id="marksTableSection" style="display:none;">
+    <form id="marksForm" onsubmit="event.preventDefault(); alert('Marks saved!');">
+      <div id="marksTableContainer"></div>
+      <br>
+      <button type="submit" class="btn">Save Marks</button>
+    </form>
+  </div>
 
   <script>
-    // Ensure subject columns match subjectCount input
-    function updateSubjectColumns() {
-      const table = document.getElementById('marksTable');
-      const subjectCount = parseInt(document.getElementById('subjectCount').value, 10) || 2;
-      const theadRow = table.tHead.rows[0];
-      const currentCols = theadRow.cells.length - 1; // First col is Student Name/Roll
+    let subjectCount = 0, studentCount = 0, subjects = [], subjectMaxMarks = [], askNames = false;
 
-      // Add new subject columns if needed
-      while (currentCols < subjectCount) {
-        const th = document.createElement('th');
-        th.innerHTML = `<input type="text" placeholder="Subject ${currentCols + 1}">`;
-        theadRow.appendChild(th);
-        // Add to tbody rows
-        for (let i = 0; i < table.tBodies[0].rows.length; ++i) {
-          const td = document.createElement('td');
-          td.innerHTML = `<input type="number" min="0">`;
-          table.tBodies[0].rows[i].appendChild(td);
-        }
+    function showSubjectsForm() {
+      subjectCount = parseInt(document.getElementById('subjectCount').value, 10);
+      studentCount = parseInt(document.getElementById('studentCount').value, 10);
+      if (!subjectCount || !studentCount) return;
+      let html = '';
+      for (let i = 1; i <= subjectCount; i++) {
+        html += `<label>Subject ${i} Name: <input type="text" required id="subName${i}" placeholder="Subject ${i}"></label>
+                 <label> Max Marks: <input type="number" min="1" required id="subMarks${i}"></label><br><br>`;
       }
-      // Remove extra subject columns if needed
-      while (currentCols > subjectCount) {
-        theadRow.deleteCell(-1);
-        for (let i = 0; i < table.tBodies[0].rows.length; ++i) {
-          table.tBodies[0].rows[i].deleteCell(-1);
-        }
-      }
+      document.getElementById('subjectsInputs').innerHTML = html;
+      document.getElementById('setupSection').style.display = 'none';
+      document.getElementById('subjectsSection').style.display = '';
     }
 
-    // Ensure student rows match studentCount input
-    function updateStudentRows() {
-      const table = document.getElementById('marksTable');
-      const studentCount = parseInt(document.getElementById('studentCount').value, 10) || 2;
-      const colCount = table.tHead.rows[0].cells.length;
-      let tbody = table.tBodies[0];
-      let currentRows = tbody.rows.length;
+    function showNamesPrompt() {
+      subjects = [];
+      subjectMaxMarks = [];
+      for (let i = 1; i <= subjectCount; i++) {
+        subjects.push(document.getElementById(`subName${i}`).value.trim() || `Subject ${i}`);
+        subjectMaxMarks.push(parseInt(document.getElementById(`subMarks${i}`).value, 10) || 0);
+      }
+      document.getElementById('subjectsSection').style.display = 'none';
+      document.getElementById('namesPromptSection').style.display = '';
+    }
 
-      // Add rows if needed
-      while (currentRows < studentCount) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td><input type="text" placeholder="Student ${currentRows + 1}"></td>`;
-        for (let i = 1; i < colCount; ++i) {
-          tr.innerHTML += `<td><input type="number" min="0"></td>`;
+    function generateTable(withNames) {
+      askNames = withNames;
+      document.getElementById('namesPromptSection').style.display = 'none';
+      let table = '<table><thead><tr><th>Roll No.</th>';
+      if (askNames) table += '<th>Name</th>';
+      for (let i = 0; i < subjectCount; i++) {
+        table += `<th>${subjects[i]}<br>(Max: ${subjectMaxMarks[i]})</th>`;
+      }
+      table += '</tr></thead><tbody>';
+      for (let r = 1; r <= studentCount; r++) {
+        table += `<tr><td>${r}</td>`;
+        if (askNames) table += `<td><input type="text" placeholder="Student ${r}" name="studentName${r}"></td>`;
+        for (let s = 0; s < subjectCount; s++) {
+          table += `<td><input type="number" min="0" max="${subjectMaxMarks[s]}" name="marks_${r}_${s}"></td>`;
         }
-        tbody.appendChild(tr);
-        currentRows++;
+        table += '</tr>';
       }
-      // Remove rows if needed
-      while (currentRows > studentCount) {
-        tbody.deleteRow(tbody.rows.length - 1);
-        currentRows--;
-      }
+      table += '</tbody></table>';
+      document.getElementById('marksTableContainer').innerHTML = table;
+      document.getElementById('marksTableSection').style.display = '';
     }
   </script>
 </body>
