@@ -11,6 +11,9 @@
     th { background: #f0f0f0; }
     input[type="number"], input[type="text"] { width: 90%; padding: 2px; }
     .btn { padding: 6px 12px; font-size: 16px; }
+    .result-table { width: 60%; margin-bottom: 30px; }
+    .result-table th { background: #e0e0f0; }
+    .summary-box { margin-bottom: 22px; }
   </style>
 </head>
 <body>
@@ -45,11 +48,16 @@
   </div>
 
   <div class="section" id="marksTableSection" style="display:none;">
-    <form id="marksForm" onsubmit="event.preventDefault(); alert('Marks saved!');">
+    <form id="marksForm" onsubmit="event.preventDefault(); processMarks();">
       <div id="marksTableContainer"></div>
       <br>
       <button type="submit" class="btn">Save Marks</button>
     </form>
+  </div>
+
+  <div class="section" id="resultsSection" style="display:none;">
+    <h2>Results</h2>
+    <div id="resultsDisplay"></div>
   </div>
 
   <script>
@@ -100,6 +108,90 @@
       table += '</tbody></table>';
       document.getElementById('marksTableContainer').innerHTML = table;
       document.getElementById('marksTableSection').style.display = '';
+    }
+
+    function processMarks() {
+      // Read marks and names from table
+      let students = [];
+      for (let r = 1; r <= studentCount; r++) {
+        let student = {
+          roll: r,
+          name: askNames ? document.getElementsByName("studentName" + r)[0].value.trim() : "",
+          marks: [],
+          total: 0,
+          percent: 0
+        };
+        let actualSubjects = 0, totalMarks = 0;
+        for (let s = 0; s < subjectCount; s++) {
+          let input = document.getElementsByName(`marks_${r}_${s}`)[0];
+          let val = input.value;
+          if (val !== "") {
+            let num = parseFloat(val);
+            student.marks[s] = num;
+            totalMarks += num;
+            actualSubjects++;
+          } else {
+            student.marks[s] = null;
+          }
+        }
+        student.total = totalMarks;
+        student.percent = actualSubjects ? (totalMarks / actualSubjects).toFixed(2) : "N/A";
+        students.push(student);
+      }
+
+      // Per-subject stats
+      let subjectStats = subjects.map((sub, idx) => {
+        let total = 0, count = 0, marksArr = [];
+        students.forEach(stu => {
+          if (stu.marks[idx] !== null && stu.marks[idx] !== undefined) {
+            total += stu.marks[idx];
+            marksArr.push(stu.marks[idx]);
+            count++;
+          }
+        });
+        return {
+          name: sub,
+          avg: count ? (total / count).toFixed(2) : "N/A",
+          marks: marksArr,
+          count: count
+        };
+      });
+
+      // Display
+      let resultsHTML = "";
+
+      // Student summary table
+      resultsHTML += `<div class="summary-box"><b>Student Summary</b><br>
+      <table class="result-table"><thead><tr><th>Roll No.</th>`;
+      if (askNames) resultsHTML += `<th>Name</th>`;
+      resultsHTML += `<th>Total</th><th>Average %</th></tr></thead><tbody>`;
+      students.forEach(stu => {
+        resultsHTML += `<tr><td>${stu.roll}</td>`;
+        if (askNames) resultsHTML += `<td>${stu.name}</td>`;
+        resultsHTML += `<td>${stu.total}</td><td>${stu.percent}</td></tr>`;
+      });
+      resultsHTML += `</tbody></table></div>`;
+
+      // Per subject table
+      subjectStats.forEach((stat, idx) => {
+        resultsHTML += `<div class="summary-box"><b>Subject: ${stat.name}</b><br>
+        <span>Average marks (only among students who took this subject): <b>${stat.avg}</b></span>
+        <table class="result-table"><thead><tr><th>Roll No.</th>`;
+        if (askNames) resultsHTML += `<th>Name</th>`;
+        resultsHTML += `<th>Marks</th></tr></thead><tbody>`;
+        students.forEach(stu => {
+          if (stu.marks[idx] !== null && stu.marks[idx] !== undefined) {
+            resultsHTML += `<tr><td>${stu.roll}</td>`;
+            if (askNames) resultsHTML += `<td>${stu.name}</td>`;
+            resultsHTML += `<td>${stu.marks[idx]}</td></tr>`;
+          }
+        });
+        resultsHTML += `</tbody></table></div>`;
+      });
+
+      document.getElementById('resultsDisplay').innerHTML = resultsHTML;
+      document.getElementById('resultsSection').style.display = '';
+      window.scrollTo({top: document.body.scrollHeight, behavior: "smooth"});
     }
   </script>
 </body>
