@@ -2,149 +2,78 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Marks Entry & Subjectwise Tables</title>
+  <title>Student Subject Marks Entry (Manual Table)</title>
   <style>
-    table { border-collapse: collapse; margin-bottom: 24px; width: 60%; }
+    body { font-family: Arial, sans-serif; }
+    table { border-collapse: collapse; margin: 20px 0; width: 80%; }
     th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
     th { background: #f0f0f0; }
-    .section { margin-bottom: 32px; }
+    input[type="text"], input[type="number"] { width: 90%; padding: 2px; }
+    .hint { font-size: 90%; color: #555; }
   </style>
 </head>
 <body>
-  <h1>Student Marks Entry (Subjectwise Tables, Simple HTML)</h1>
+  <h1>Flexible Student Marks Entry</h1>
 
-  <div class="section">
-    <h2>Fixed Subjects</h2>
-    <ol>
-      <li>Mathematics</li>
-      <li>English</li>
-      <li>Science</li>
-    </ol>
-    <h2>Optional Subjects</h2>
-    <ol>
-      <li>Computer Science</li>
-      <li>Economics</li>
-      <li>Hindi</li>
-      <li>Art</li>
-    </ol>
-  </div>
+  <p class="hint">
+    <strong>Instructions:</strong> Add or remove rows for subjects, and columns for students as needed.<br>
+    Leave a cell blank if a student did <b>not take</b> that subject.<br>
+    Enter <b>0</b> if a student was <b>absent</b> for that subject.<br>
+    Enter marks otherwise.<br>
+    <button onclick="addSubjectRow()">Add Subject Row</button>
+    <button onclick="addStudentColumn()">Add Student Column</button>
+  </p>
 
-  <div class="section">
-    <h2>Student Marks Entry (5 subjects/row, blank = not taken, 0 = absent)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Roll No</th>
-          <th>Mathematics</th>
-          <th>English</th>
-          <th>Science</th>
-          <th>Computer Science</th>
-          <th>Economics</th>
-          <th>Hindi</th>
-          <th>Art</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>89</td>
-          <td>73</td>
-          <td>78</td>
-          <td>94</td>
-          <td></td>
-          <td></td>
-          <td>81</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>66</td>
-          <td>80</td>
-          <td></td>
-          <td>0</td>
-          <td>75</td>
-          <td>90</td>
-          <td></td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>92</td>
-          <td></td>
-          <td>83</td>
-          <td></td>
-          <td>77</td>
-          <td>96</td>
-          <td>0</td>
-        </tr>
-        <!-- Add more students as needed -->
-      </tbody>
-    </table>
-  </div>
+  <table id="marksTable">
+    <thead>
+      <tr>
+        <th>Subject Name</th>
+        <th>Student 1<br><input type="text" value="Roll 1"></th>
+        <th>Student 2<br><input type="text" value="Roll 2"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" placeholder="Subject"></td>
+        <td><input type="number" min="0"></td>
+        <td><input type="number" min="0"></td>
+      </tr>
+      <tr>
+        <td><input type="text" placeholder="Subject"></td>
+        <td><input type="number" min="0"></td>
+        <td><input type="number" min="0"></td>
+      </tr>
+      <!-- User can add more rows/columns as needed -->
+    </tbody>
+  </table>
 
-  <div class="section">
-    <h2>Subject-wise Tables</h2>
-    <h3>Mathematics</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>89</td></tr>
-        <tr><td>2</td><td>66</td></tr>
-        <tr><td>3</td><td>92</td></tr>
-      </tbody>
-    </table>
-
-    <h3>English</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>73</td></tr>
-        <tr><td>2</td><td>80</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Science</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>78</td></tr>
-        <tr><td>3</td><td>83</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Computer Science</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>94</td></tr>
-        <tr><td>2</td><td>0</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Economics</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>2</td><td>75</td></tr>
-        <tr><td>3</td><td>77</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Hindi</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>2</td><td>90</td></tr>
-        <tr><td>3</td><td>96</td></tr>
-      </tbody>
-    </table>
-
-    <h3>Art</h3>
-    <table>
-      <thead><tr><th>Roll No</th><th>Marks</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>81</td></tr>
-        <tr><td>3</td><td>0</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <script>
+    // Let user add more subject rows
+    function addSubjectRow() {
+      const table = document.getElementById('marksTable').getElementsByTagName('tbody')[0];
+      const tr = document.createElement('tr');
+      const thRow = document.getElementById('marksTable').rows[0];
+      tr.innerHTML = `<td><input type="text" placeholder="Subject"></td>`;
+      for (let i = 1; i < thRow.cells.length; ++i) {
+        tr.innerHTML += `<td><input type="number" min="0"></td>`;
+      }
+      table.appendChild(tr);
+    }
+    // Let user add more student columns
+    function addStudentColumn() {
+      const table = document.getElementById('marksTable');
+      // Add to header
+      const th = document.createElement('th');
+      const n = table.rows[0].cells.length;
+      th.innerHTML = `Student ${n}<br><input type="text" value="Roll ${n}">`;
+      table.rows[0].appendChild(th);
+      // Add to each body row
+      for (let i = 1; i < table.rows.length; ++i) {
+        const td = document.createElement('td');
+        td.innerHTML = `<input type="number" min="0">`;
+        table.rows[i].appendChild(td);
+      }
+    }
+  </script>
 </body>
 </html>
